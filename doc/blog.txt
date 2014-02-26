@@ -1,0 +1,73 @@
+A quick introduction to AssertJ.
+
+As a developer, you might be familiar with Hamcrest, a declarative rule based object matcher framework. Or, in other words, a testing library which will make your test easy to read. While Hamcrest is a great library, there are some limitations to it's expressiveness, so I searched for a better Hamcrest. Meet AssertJ.
+
+AssertJ is a library which provides a rich set of asserts and a fluent interface to help developers write maintainable tests. Besides that, most of the AssertJ error messages in the case of failing tests are very expressive and helpful, and provide great feedback to the developers in finding out why a test failure occured.
+
+ To setup AssertJ in your project, the only library you'll need is the <code>assertj-core</code> library. I've set up a <a href="">sample project</a> on Github to help you with the complete configuration, including a sample project. To make sure you're importing the right assertThat method, we'll be excluding the JUnit method.
+
+ << insert image here >>
+
+ To make our lives even easier, we'll setup an IntelliJ Live Tempate, which will map the 'at' abbreviation to expand to assertThat's assertion method. This way, we only need to type 'at', press <Tab>, and the right assertThat method will be used, including imports.
+
+ << insert image here >>
+
+In this example we'll be testing a small movie catalogue, in which most logic is located in finding the movies, and, in our case, thrillers:
+
+ <pre class="brush:java>
+public List<Movie> findThrillers() {
+    return from(movies).filter(thrillerFilter()).toList();
+}
+ </pre>
+
+The code above uses the Guava FluentIterator to filter movies based on a certain criteria, in this case a genre filter for Thrillers. To test this, we could write the following AssertJ test:
+
+<pre class="brush:java>
+List<Movie> thrillers = movieDao.findThrillers();
+
+assertThat(thrillers).extracting("title").containsOnly(
+        "The Dark Knight", "Pulp Fiction", "Se7en", "Gunday"
+);
+</pre>
+
+What happens here, is that for each element in the list of Thrillers, the 'title' property is extracted, and a exact match is done on the result of the thrillers result, ie. it should have exactly 4 elements.
+
+One of the great features of AssertJ is that the assertThat is a generic method. This means, that your IDE will help you a great deal to know which methods are available to help in testing, since it depends on the type of the object passed to assertThat. To illustrate this, see the following example:
+
+<< insert image here>>
+
+As you can see here, only the methods which can be applied to a List are shown. If I replace the List with a String (see below)
+
+<< insert image here>>
+
+I immediately get a compile time error, and when using code completion again, I get a nice list of methods which are compatible with a String type.
+
+<< insert image here>>
+
+Besides providing a hints to a developer and giving early feedback, AssertJ also enables you to have very readable tests. An example can be seen below:
+
+<pre class="brush:java>
+assertThat(thrillers)
+        .extracting("title", "year")
+        .contains(
+                tuple("The Dark Knight", 2008),
+                tuple("Pulp Fiction", 1994),
+        );
+</pre>
+
+Here, we extract multiple attributes of a Movie, and we'll compare them with our actual result. Should a comparison fail, an error is shown:
+
+ <pre class="brush:java>
+java.lang.AssertionError:
+Expecting:
+ <[('The Dark Knight', 2008), ('Pulp Fiction', 1994), ('Se7en', 1995), ('Gunday', 2014)]>
+to contain:
+ <[('The Dark Knight', 2008), ('Pulp Fiction', 1994), ('Se8en', 1995)]>
+but could not find:
+ <[('Se8en', 1995)]>
+ </pre>
+
+ In this, we expected the movie 'Se8en' to be there, but we made an obvious typo, which could be corrected quickly.
+
+ I hope this short introduction gave you a impression of what is possible with AssertJ. AssertJ provides many more features, like powerful test DSL's, auto generated asserts for your own types, support for Joda, Guava and Neo4j, and much more, so checkout <a href="http://www.assertj.org">AssertJ</a> and start improving your test code!
+
